@@ -1,15 +1,12 @@
 package com.mygdx.jetpackjoyrideuf3m08;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.TimeUtils;
+
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.*;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.utils.*;
+
 
 import java.util.Iterator;
 
@@ -20,6 +17,9 @@ public class GameScreen implements Screen {
     Texture backgroundImage;
     Texture pipeUpImage;
     Texture pipeDownImage;
+
+    Texture pauseT;
+    Rectangle pause;
 
     OrthographicCamera camera;
 
@@ -36,20 +36,34 @@ public class GameScreen implements Screen {
     Sound flapSound;
     Sound failSound;
 
+    Music backgroundMusic;
+    boolean playMusic = false;
+
     public GameScreen(final Character gam) {
         this.game = gam;
 
         score = 0;
 
+        // load the pause
+        pauseT = new Texture(Gdx.files.internal("pause.png"));
+        pause = new Rectangle();
+        pause.y = 375;
+        pause.x = 700;
+        pause.height = 64;
+        pause.width = 64;
+
         // load the images
         backgroundImage = new Texture(Gdx.files.internal("backgroundlaboratory.png"));
         birdImage = new Texture(Gdx.files.internal("barry.png"));
-        pipeUpImage = new Texture(Gdx.files.internal("pipe_up.png"));
-        pipeDownImage = new Texture(Gdx.files.internal("pipe_down.png"));
+        pipeUpImage = new Texture(Gdx.files.internal("laser_ele.png"));
+        pipeDownImage = new Texture(Gdx.files.internal("laser_eleh.png"));
 
         // load the sound effects
-        flapSound = Gdx.audio.newSound(Gdx.files.internal("flap.wav"));
-        failSound = Gdx.audio.newSound(Gdx.files.internal("fail.wav"));
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+        backgroundMusic.setLooping(true);
+
+//        flapSound = Gdx.audio.newSound(Gdx.files.internal("flap.wav"));
+//        failSound = Gdx.audio.newSound(Gdx.files.internal("fail.wav"));
 
         // create the camera and the SpriteBatch
         camera = new OrthographicCamera();
@@ -59,9 +73,9 @@ public class GameScreen implements Screen {
         // create a Rectangle to logically represent the player
         player = new Rectangle();
         player.x = 50;
-        player.y = 480 / 2 - 45 / 2;
-        player.width = 64;
-        player.height = 45;
+        player.y = 6;
+        player.width = 30;
+        player.height = 50;
 
         speedy = 0;
         gravity = 850f;
@@ -71,6 +85,8 @@ public class GameScreen implements Screen {
         // create the obstacles array and spawn the first obstacle
         obstacles = new Array<Rectangle>();
         spawnObstacle();
+
+
     }
 
     private void spawnObstacle() {
@@ -79,24 +95,27 @@ public class GameScreen implements Screen {
         float holey = MathUtils.random(50, 230);
 
         // Crea dos obstacles: Una tubería superior i una inferior
-//        Rectangle pipe1 = new Rectangle();
-//        pipe1.x = 800;
-//        pipe1.y = holey - 230;
-//        pipe1.width = 64;
-//        pipe1.height = 230;
-//        obstacles.add(pipe1);
+        Rectangle pipe1 = new Rectangle();
+        pipe1.x = 1000;
+        pipe1.y = holey - 230;
+        pipe1.width = 31;
+        pipe1.height = 81;
+        obstacles.add(pipe1);
 
-//        Rectangle pipe2 = new Rectangle();
-//        pipe2.x = 800;
-//        pipe2.y = holey + 200;
-//        pipe2.width = 64;
-//        pipe2.height = 230;
-//        obstacles.add(pipe2);
-//        lastObstacleTime = TimeUtils.nanoTime();
+        Rectangle pipe2 = new Rectangle();
+        pipe2.x = 1100;
+        pipe2.y = holey + 200;
+        pipe2.width = 80;
+        pipe2.height = 50;
+        obstacles.add(pipe2);
+
+        lastObstacleTime = TimeUtils.nanoTime();
     }
 
     @Override
     public void render(float delta) {
+
+
 
         //=====RENDER=====/
         // clear the screen with a color
@@ -115,7 +134,13 @@ public class GameScreen implements Screen {
         for(int i = 0; i < obstacles.size; i++)
         {
             game.batch.draw(
-                    i % 2 == 0 ? pipeUpImage : pipeDownImage,
+                    i % 2 == 0 ? pipeUpImage : pipeUpImage,
+                    obstacles.get(i).x, obstacles.get(i).y);
+        }
+        for(int i = 0; i < obstacles.size; i++)
+        {
+            game.batch.draw(
+                    i % 3 == 0 ? pipeDownImage : pipeDownImage,
                     obstacles.get(i).x, obstacles.get(i).y);
         }
         game.font.draw(game.batch, "Score: " + (int)score, 10, 470);
@@ -126,7 +151,7 @@ public class GameScreen implements Screen {
         //if (Gdx.input.justTouched()) {
         if(Gdx.input.isTouched()){
             speedy = 200f;
-            flapSound.play();
+//            flapSound.play();
         }
 
         //Actualitza la posició del jugador amb la velocitat vertical
@@ -167,10 +192,16 @@ public class GameScreen implements Screen {
         }
 
 
+        backgroundMusic.setVolume(0.2f);
+        if (!backgroundMusic.isLooping()) backgroundMusic.setLooping(true);
+        if (!playMusic) {
+            backgroundMusic.play();
+            playMusic = true;
+        }
 
         if(dead)
         {
-            failSound.play();
+//            failSound.play();
             game.lastScore = (int)score;
             if(game.lastScore > game.topScore)
                 game.topScore = game.lastScore;
@@ -196,11 +227,12 @@ public class GameScreen implements Screen {
     }
     @Override
     public void dispose() {
+        backgroundMusic.dispose();
         backgroundImage.dispose();
         birdImage.dispose();
         pipeDownImage.dispose();
         pipeUpImage.dispose();
-        failSound.dispose();
-        flapSound.dispose();
+//        failSound.dispose();
+//        flapSound.dispose();
     }
 }

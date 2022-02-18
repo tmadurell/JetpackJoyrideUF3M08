@@ -1,8 +1,7 @@
 package com.mygdx.jetpackjoyrideuf3m08;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.utils.*;
 
 
 public class MainMenuScreen implements Screen {

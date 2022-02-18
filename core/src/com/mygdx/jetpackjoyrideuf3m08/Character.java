@@ -1,7 +1,7 @@
 package com.mygdx.jetpackjoyrideuf3m08;
-import com.badlogic.gdx.Game;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.g2d.*;
+
 
 
 public class Character extends Game {
